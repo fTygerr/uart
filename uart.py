@@ -138,13 +138,13 @@ def close_application(event):
 # GUI Setup
 root = tk.Tk()
 root.title("UART Communicator - Keypad Interface")
-root.configure(bg="#01331A")  # Match root background with frame
+root.configure(bg="#a30319")  # Match root background with frame
 # root.attributes("-fullscreen", True)  # Commented out fullscreen
 root.geometry("480x800")  # Set a fixed window size instead
 root.bind("<Escape>", close_application)
 
 # Frame for buttons and labels
-frame = tk.Frame(root, bg="#01331A", width=480, height=800)  # Full-screen frame
+frame = tk.Frame(root, bg="#a30319", width=480, height=800)  # Full-screen frame
 frame.place(relx=0.5, rely=0.5, anchor="center")
 
 # Display area with border
@@ -188,9 +188,9 @@ for i in range(8):  # 8 keys (0-7)
         text=KEY_LABELS[i],
         width=10,  # Reduced button width
         height=2,  # Reduced button height
-        bg="#01331A",
+        bg="#a30319",
         fg="#FAAF40",
-        activebackground="#01331A",
+        activebackground="#a30319",
         activeforeground="#FAAF40",
         highlightbackground="#C1C1C1",
         highlightthickness=2,
