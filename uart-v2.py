@@ -73,10 +73,10 @@ class ModernButton(QPushButton):
 class UARTInterface(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("UART Controller")
+        self.setWindowTitle("SVA Next Gen Phase II")  # Window title in the frame
         self.setFixedSize(480, 800)
         
-        # Modern dark theme
+        # Keep existing stylesheet, just remove title-specific styling
         self.setStyleSheet("""
             QMainWindow {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
@@ -108,22 +108,9 @@ class UARTInterface(QMainWindow):
         self.setCentralWidget(central_widget)
         main_layout = QVBoxLayout(central_widget)
         main_layout.setSpacing(20)
-        main_layout.setContentsMargins(20, 20, 20, 20)
+        main_layout.setContentsMargins(20, 10, 20, 20)  # Reduced top margin
 
-        # Title
-        title = QLabel("UART Controller")
-        title.setStyleSheet("""
-            QLabel {
-                color: #FAAF40;
-                font-size: 24px;
-                font-weight: bold;
-                padding: 10px;
-            }
-        """)
-        title.setAlignment(Qt.AlignCenter)
-        main_layout.addWidget(title)
-        
-        # Display frame with modern design
+        # Display frame (moved up)
         display_frame = QFrame()
         display_frame.setStyleSheet("""
             QFrame {
