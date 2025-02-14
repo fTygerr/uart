@@ -130,42 +130,25 @@ class UARTInterface(QMainWindow):
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.showFullScreen()
         
-        self.setWindowTitle("SVA Next Gen Phase II")  # Window title in the frame
-        self.setFixedSize(480, 800)
+        # Create stacked widget for multiple pages
+        self.stacked_widget = QStackedWidget()
+        self.setCentralWidget(self.stacked_widget)
         
-        # Keep existing stylesheet, just remove title-specific styling
-        self.setStyleSheet("""
-            QMainWindow {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 #1a1a1a, stop:1 #2d2d2d);
-            }
-            QPushButton {
-                background-color: #2e2e2e;
-                color: #ffffff;
-                border: none;
-                border-radius: 15px;
-                padding: 15px;
-                font-size: 16px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #3e3e3e;
-            }
-            QPushButton:pressed {
-                background-color: #4a4a4a;
-            }
-            QLabel {
-                color: #ffffff;
-                font-size: 14px;
-            }
-        """)
+        # Create main page
+        self.main_page = QWidget()
+        self.setup_main_page()
+        self.stacked_widget.addWidget(self.main_page)
+        
+        # Create menu page
+        self.menu_page = QWidget()
+        self.setup_menu_page()
+        self.stacked_widget.addWidget(self.menu_page)
 
-        # Central widget setup
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
-        main_layout = QVBoxLayout(central_widget)
+    def setup_main_page(self):
+        # Main page layout
+        main_layout = QVBoxLayout(self.main_page)
         main_layout.setSpacing(20)
-        main_layout.setContentsMargins(20, 10, 20, 20)  # Reduced top margin
+        main_layout.setContentsMargins(20, 10, 20, 20)
 
         # Display frame with menu button
         display_frame = QFrame()
@@ -275,12 +258,54 @@ class UARTInterface(QMainWindow):
         self.display_timer.timeout.connect(lambda: send_display_command(0))
         self.display_timer.start(int(DISPLAY_UPDATE_INTERVAL * 1000))
 
-        # Create menu overlay
-        self.menu_overlay = MenuOverlay(self)
-        self.menu_overlay.hide()
+    def setup_menu_page(self):
+        self.menu_page.setStyleSheet("""
+            QWidget {
+                background-color: #1a1a1a;
+            }
+            QPushButton {
+                background-color: #2e2e2e;
+                color: #ffffff;
+                border: none;
+                border-radius: 15px;
+                padding: 20px;
+                font-size: 16px;
+                font-weight: bold;
+                min-width: 200px;
+            }
+            QPushButton:hover {
+                background-color: #3e3e3e;
+            }
+        """)
+        
+        # Menu page layout
+        menu_layout = QVBoxLayout(self.menu_page)
+        menu_layout.setAlignment(Qt.AlignCenter)
+        menu_layout.setSpacing(20)
+        
+        # Return button
+        return_btn = QPushButton("Return to Program")
+        return_btn.clicked.connect(self.show_main)
+        menu_layout.addWidget(return_btn)
+        
+        # Exit button
+        exit_btn = QPushButton("Exit")
+        exit_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #662222;
+            }
+            QPushButton:hover {
+                background-color: #883333;
+            }
+        """)
+        exit_btn.clicked.connect(QApplication.instance().quit)
+        menu_layout.addWidget(exit_btn)
 
     def show_menu(self):
-        self.menu_overlay.show()
+        self.stacked_widget.setCurrentIndex(1)  # Show menu page
+
+    def show_main(self):
+        self.stacked_widget.setCurrentIndex(0)  # Show main page
 
     def closeEvent(self, event):
         self.display_timer.stop()
