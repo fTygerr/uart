@@ -191,20 +191,7 @@ class UARTInterface(QMainWindow):
 
         # Display frame with menu button
         display_frame = QFrame()
-        display_frame.setStyleSheet("""
-            QFrame {
-                background-color: #1e1e1e;
-                border: 2px solid #3a3a3a;
-                border-radius: 15px;
-                padding: 15px;
-            }
-            QLabel {
-                color: #00ff00;
-                font-family: 'Courier';
-                font-size: 18px;
-                font-weight: bold;
-            }
-        """)
+        display_frame.setObjectName("displayFrame")  # Add object name for styling
         display_layout = QVBoxLayout(display_frame)
         
         # Header container for menu button
@@ -248,13 +235,7 @@ class UARTInterface(QMainWindow):
 
         # Button grid in a card-like container
         button_container = QFrame()
-        button_container.setStyleSheet("""
-            QFrame {
-                background-color: #2a2a2a;
-                border-radius: 15px;
-                padding: 20px;
-            }
-        """)
+        button_container.setObjectName("buttonContainer")  # Add object name for styling
         button_layout = QGridLayout(button_container)
         button_layout.setSpacing(15)
         
@@ -433,6 +414,22 @@ class UARTInterface(QMainWindow):
             QLabel {
                 color: #333333;
             }
+            
+            /* Display frame specific styles */
+            QFrame#displayFrame {
+                background-color: #ffffff;
+            }
+            QFrame#displayFrame QLabel {
+                color: #0066cc;
+                font-family: 'Courier';
+                font-size: 18px;
+                font-weight: bold;
+            }
+            
+            /* Button container specific styles */
+            QFrame#buttonContainer {
+                background-color: #f5f5f5;
+            }
         """)
         
         # Menu page light theme
@@ -452,6 +449,16 @@ class UARTInterface(QMainWindow):
             }
             QPushButton:hover {
                 background-color: #f5f5f5;
+            }
+            QPushButton:pressed {
+                background-color: #e8e8e8;
+            }
+            QPushButton#exitButton {
+                background-color: #662222;
+                color: #ffffff;
+            }
+            QPushButton#exitButton:hover {
+                background-color: #883333;
             }
         """)
 
