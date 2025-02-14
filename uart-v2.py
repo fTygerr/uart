@@ -2,9 +2,9 @@ import serial
 import os
 from threading import Timer
 import time
-from PySide6.QtWidgets import *
-from PySide6.QtCore import *
-from PySide6.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 import sys
 
 # Suppress tkinter deprecation warning
@@ -230,4 +230,4 @@ if __name__ == "__main__":
     window.show()
     
     # Start Qt event loop
-    sys.exit(app.exec())
+    sys.exit(app.exec_())
