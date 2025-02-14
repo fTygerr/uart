@@ -125,6 +125,11 @@ class MenuOverlay(QWidget):
 class UARTInterface(QMainWindow):
     def __init__(self):
         super().__init__()
+        
+        # Set window flags for true fullscreen without decorations
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        self.showFullScreen()
+        
         self.setWindowTitle("SVA Next Gen Phase II")  # Window title in the frame
         self.setFixedSize(480, 800)
         
