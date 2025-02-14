@@ -77,7 +77,7 @@ class MenuOverlay(QWidget):
         self.setGeometry(parent.geometry())
         self.setStyleSheet("""
             QWidget {
-                background-color: rgba(0, 0, 0, 0.85);
+                background-color: #1a1a1a;
             }
             QPushButton {
                 background-color: #2e2e2e;
