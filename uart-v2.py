@@ -308,9 +308,11 @@ class UARTInterface(QMainWindow):
         
         # Exit button
         exit_btn = QPushButton("Exit")
+        exit_btn.setObjectName("exitButton")  # Add object name for styling
         exit_btn.setStyleSheet("""
             QPushButton {
                 background-color: #662222;
+                color: #ffffff !important;  /* Force white text always */
             }
             QPushButton:hover {
                 background-color: #883333;
@@ -361,6 +363,14 @@ class UARTInterface(QMainWindow):
             QLabel {
                 color: #ffffff;
             }
+            
+            /* Display frame specific styles */
+            QFrame#displayFrame QLabel {
+                color: #00ff00;
+                font-family: 'Courier';
+                font-size: 18px;
+                font-weight: bold;
+            }
         """)
         
         # Menu page dark theme
@@ -380,6 +390,12 @@ class UARTInterface(QMainWindow):
             }
             QPushButton:hover {
                 background-color: #3e3e3e;
+            }
+            QPushButton#exitButton {
+                background-color: #662222;
+            }
+            QPushButton#exitButton:hover {
+                background-color: #883333;
             }
         """)
 
