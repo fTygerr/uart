@@ -203,9 +203,9 @@ class UARTInterface(QMainWindow):
         
         # Header container for menu button
         header_container = QWidget()
-        header_container.setStyleSheet("background: transparent;")  # Make header transparent
+        header_container.setStyleSheet("background: transparent;")
         header_layout = QHBoxLayout(header_container)
-        header_layout.setContentsMargins(0, 0, 0, 0)  # Remove all margins
+        header_layout.setContentsMargins(0, 0, 0, 0)
         
         # Menu button
         menu_button = QPushButton("⋮")
@@ -240,18 +240,6 @@ class UARTInterface(QMainWindow):
         display_layout.addWidget(self.lower_label)
         main_layout.addWidget(display_frame)
 
-        # Status indicator
-        self.status_label = QLabel("Connected")
-        self.status_label.setStyleSheet("""
-            QLabel {
-                color: #00ff00;
-                font-size: 12px;
-                font-style: italic;
-            }
-        """)
-        self.status_label.setAlignment(Qt.AlignCenter)
-        main_layout.addWidget(self.status_label)
-
         # Button grid in a card-like container
         button_container = QFrame()
         button_container.setStyleSheet("""
@@ -275,6 +263,9 @@ class UARTInterface(QMainWindow):
 
         main_layout.addWidget(button_container)
 
+        # Add stretch to push content up
+        main_layout.addStretch(1)
+
         # Footer with version info
         footer = QLabel("SVA Next Gen Phase II")
         footer.setStyleSheet("""
@@ -282,6 +273,7 @@ class UARTInterface(QMainWindow):
                 color: #666666;
                 font-size: 12px;
                 font-style: italic;
+                margin-bottom: 20px;
             }
         """)
         footer.setAlignment(Qt.AlignCenter)
