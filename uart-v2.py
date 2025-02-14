@@ -203,8 +203,9 @@ class UARTInterface(QMainWindow):
         
         # Header container for menu button
         header_container = QWidget()
+        header_container.setStyleSheet("background: transparent;")  # Make header transparent
         header_layout = QHBoxLayout(header_container)
-        header_layout.setContentsMargins(0, 0, 0, 10)
+        header_layout.setContentsMargins(0, 0, 0, 0)  # Remove all margins
         
         # Menu button
         menu_button = QPushButton("⋮")
