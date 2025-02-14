@@ -39,34 +39,67 @@ DISPLAY_UPDATE_INTERVAL = 0.75
 MAX_ERRORS = 3  # Maximum consecutive errors before showing error message
 error_counter = 0  # Global counter for consecutive errors
 
+class ModernButton(QPushButton):
+    def __init__(self, text, parent=None):
+        super().__init__(text, parent)
+        self.setMinimumHeight(80)
+        self.setCursor(Qt.PointingHandCursor)
+        
+        # Animation setup
+        self._animation = QPropertyAnimation(self, b"geometry")
+        self._animation.setDuration(100)
+        
+        # Shadow effect
+        self.shadow = QGraphicsDropShadowEffect()
+        self.shadow.setBlurRadius(20)
+        self.shadow.setOffset(0, 0)
+        self.shadow.setColor(QColor(0, 0, 0, 80))
+        self.setGraphicsEffect(self.shadow)
+
+    def enterEvent(self, event):
+        self.shadow.setColor(QColor(250, 175, 64, 180))
+        rect = self.geometry()
+        self._animation.setStartValue(rect)
+        self._animation.setEndValue(QRect(rect.x()-2, rect.y()-2, rect.width()+4, rect.height()+4))
+        self._animation.start()
+
+    def leaveEvent(self, event):
+        self.shadow.setColor(QColor(0, 0, 0, 80))
+        rect = self.geometry()
+        self._animation.setStartValue(rect)
+        self._animation.setEndValue(QRect(rect.x()+2, rect.y()+2, rect.width()-4, rect.height()-4))
+        self._animation.start()
+
 class UARTInterface(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("UART Communicator - Keypad Interface")
+        self.setWindowTitle("UART Controller")
         self.setFixedSize(480, 800)
         
-        # Apply global stylesheet
+        # Modern dark theme
         self.setStyleSheet("""
             QMainWindow {
-                background-color: #01331A;
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #1a1a1a, stop:1 #2d2d2d);
             }
             QPushButton {
-                background-color: #01331A;
-                color: #FAAF40;
-                border: 2px solid #C1C1C1;
-                border-radius: 10px;
+                background-color: #2e2e2e;
+                color: #ffffff;
+                border: none;
+                border-radius: 15px;
                 padding: 15px;
-                font-size: 14px;
+                font-size: 16px;
                 font-weight: bold;
-                min-height: 60px;
-                min-width: 120px;
             }
             QPushButton:hover {
-                background-color: #024827;
-                border-color: #FAAF40;
+                background-color: #3e3e3e;
             }
             QPushButton:pressed {
-                background-color: #036d3a;
+                background-color: #4a4a4a;
+            }
+            QLabel {
+                color: #ffffff;
+                font-size: 14px;
             }
         """)
 
@@ -74,21 +107,35 @@ class UARTInterface(QMainWindow):
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         main_layout = QVBoxLayout(central_widget)
-        main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        main_layout.setSpacing(20)
+        main_layout.setContentsMargins(20, 20, 20, 20)
+
+        # Title
+        title = QLabel("UART Controller")
+        title.setStyleSheet("""
+            QLabel {
+                color: #FAAF40;
+                font-size: 24px;
+                font-weight: bold;
+                padding: 10px;
+            }
+        """)
+        title.setAlignment(Qt.AlignCenter)
+        main_layout.addWidget(title)
         
-        # Display frame
+        # Display frame with modern design
         display_frame = QFrame()
         display_frame.setStyleSheet("""
             QFrame {
-                background-color: black;
-                border: 2px solid white;
-                border-radius: 5px;
-                padding: 10px;
+                background-color: #1e1e1e;
+                border: 2px solid #3a3a3a;
+                border-radius: 15px;
+                padding: 15px;
             }
             QLabel {
-                color: white;
+                color: #00ff00;
                 font-family: 'Courier';
-                font-size: 16px;
+                font-size: 18px;
                 font-weight: bold;
             }
         """)
@@ -96,52 +143,65 @@ class UARTInterface(QMainWindow):
         
         self.upper_label = QLabel(" " * 20)
         self.lower_label = QLabel(" " * 20)
+        self.upper_label.setAlignment(Qt.AlignCenter)
+        self.lower_label.setAlignment(Qt.AlignCenter)
         display_layout.addWidget(self.upper_label)
         display_layout.addWidget(self.lower_label)
         main_layout.addWidget(display_frame)
 
-        # Button grid
-        button_grid = QGridLayout()
-        button_grid.setSpacing(20)
-        self.buttons = []
-        
-        for i in range(8):
-            row = (i // 2)
-            col = i % 2
-            button = QPushButton(KEY_LABELS[i])
-            
-            # Add hover animation effect
-            shadow = QGraphicsDropShadowEffect()
-            shadow.setBlurRadius(15)
-            shadow.setColor(QColor("#FAAF40"))
-            shadow.setOffset(0, 0)
-            button.setGraphicsEffect(shadow)
-            
-            button.clicked.connect(lambda checked, n=i: send_key_command(n))
-            button_grid.addWidget(button, row, col)
-            self.buttons.append(button)
-
-        main_layout.addLayout(button_grid)
-
-        # Footer
-        footer = QLabel("SVA Next Gen Phase II")
-        footer.setStyleSheet("""
+        # Status indicator
+        self.status_label = QLabel("Connected")
+        self.status_label.setStyleSheet("""
             QLabel {
-                color: #FAAF40;
-                font-size: 10px;
+                color: #00ff00;
+                font-size: 12px;
                 font-style: italic;
             }
         """)
-        footer.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.status_label.setAlignment(Qt.AlignCenter)
+        main_layout.addWidget(self.status_label)
+
+        # Button grid in a card-like container
+        button_container = QFrame()
+        button_container.setStyleSheet("""
+            QFrame {
+                background-color: #2a2a2a;
+                border-radius: 15px;
+                padding: 20px;
+            }
+        """)
+        button_layout = QGridLayout(button_container)
+        button_layout.setSpacing(15)
+        
+        self.buttons = []
+        for i in range(8):
+            row = (i // 2)
+            col = i % 2
+            button = ModernButton(KEY_LABELS[i])
+            button.clicked.connect(lambda checked, n=i: send_key_command(n))
+            button_layout.addWidget(button, row, col)
+            self.buttons.append(button)
+
+        main_layout.addWidget(button_container)
+
+        # Footer with version info
+        footer = QLabel("SVA Next Gen Phase II")
+        footer.setStyleSheet("""
+            QLabel {
+                color: #666666;
+                font-size: 12px;
+                font-style: italic;
+            }
+        """)
+        footer.setAlignment(Qt.AlignCenter)
         main_layout.addWidget(footer)
 
-        # Setup periodic display updates using Qt Timer
+        # Setup periodic display updates
         self.display_timer = QTimer()
         self.display_timer.timeout.connect(lambda: send_display_command(0))
         self.display_timer.start(int(DISPLAY_UPDATE_INTERVAL * 1000))
 
     def closeEvent(self, event):
-        # Cleanup when closing the application
         self.display_timer.stop()
         event.accept()
 
@@ -224,6 +284,10 @@ def send_key_command(key_number):
 if __name__ == "__main__":
     # Initialize Qt application
     app = QApplication(sys.argv)
+    
+    # Enable high DPI scaling
+    app.setAttribute(Qt.AA_EnableHighDpiScaling)
+    app.setAttribute(Qt.AA_UseHighDpiPixmaps)
     
     # Create main window
     window = UARTInterface()
