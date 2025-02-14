@@ -130,6 +130,9 @@ class UARTInterface(QMainWindow):
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.showFullScreen()
         
+        # Theme state
+        self.is_dark_theme = True
+        
         # Create stacked widget for multiple pages
         self.stacked_widget = QStackedWidget()
         self.setCentralWidget(self.stacked_widget)
@@ -143,6 +146,9 @@ class UARTInterface(QMainWindow):
         self.menu_page = QWidget()
         self.setup_menu_page()
         self.stacked_widget.addWidget(self.menu_page)
+        
+        # Apply initial theme
+        self.apply_theme()
 
     def setup_main_page(self):
         # Main page layout
@@ -309,6 +315,11 @@ class UARTInterface(QMainWindow):
         menu_layout.setAlignment(Qt.AlignCenter)
         menu_layout.setSpacing(20)
         
+        # Theme toggle button
+        self.theme_btn = QPushButton("Switch to Light Theme" if self.is_dark_theme else "Switch to Dark Theme")
+        self.theme_btn.clicked.connect(self.toggle_theme)
+        menu_layout.addWidget(self.theme_btn)
+        
         # Return button
         return_btn = QPushButton("Return to Program")
         return_btn.clicked.connect(self.show_main)
@@ -326,6 +337,123 @@ class UARTInterface(QMainWindow):
         """)
         exit_btn.clicked.connect(QApplication.instance().quit)
         menu_layout.addWidget(exit_btn)
+
+    def toggle_theme(self):
+        self.is_dark_theme = not self.is_dark_theme
+        self.theme_btn.setText("Switch to Light Theme" if self.is_dark_theme else "Switch to Dark Theme")
+        self.apply_theme()
+
+    def apply_theme(self):
+        if self.is_dark_theme:
+            self.apply_dark_theme()
+        else:
+            self.apply_light_theme()
+
+    def apply_dark_theme(self):
+        # Main page dark theme
+        self.main_page.setStyleSheet("""
+            QWidget {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #1a1a1a, stop:1 #2d2d2d);
+            }
+            QFrame {
+                background-color: #1e1e1e;
+                border: 2px solid #3a3a3a;
+                border-radius: 15px;
+                padding: 15px;
+            }
+            QPushButton {
+                background-color: #2e2e2e;
+                color: #ffffff;
+                border: none;
+                border-radius: 15px;
+                padding: 15px;
+                font-size: 16px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #3e3e3e;
+            }
+            QPushButton:pressed {
+                background-color: #4a4a4a;
+            }
+            QLabel {
+                color: #ffffff;
+            }
+        """)
+        
+        # Menu page dark theme
+        self.menu_page.setStyleSheet("""
+            QWidget {
+                background-color: #1a1a1a;
+            }
+            QPushButton {
+                background-color: #2e2e2e;
+                color: #ffffff;
+                border: none;
+                border-radius: 15px;
+                padding: 20px;
+                font-size: 16px;
+                font-weight: bold;
+                min-width: 200px;
+            }
+            QPushButton:hover {
+                background-color: #3e3e3e;
+            }
+        """)
+
+    def apply_light_theme(self):
+        # Main page light theme
+        self.main_page.setStyleSheet("""
+            QWidget {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #f0f0f0, stop:1 #e0e0e0);
+            }
+            QFrame {
+                background-color: #ffffff;
+                border: 2px solid #dddddd;
+                border-radius: 15px;
+                padding: 15px;
+            }
+            QPushButton {
+                background-color: #f8f8f8;
+                color: #333333;
+                border: none;
+                border-radius: 15px;
+                padding: 15px;
+                font-size: 16px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #eeeeee;
+            }
+            QPushButton:pressed {
+                background-color: #e0e0e0;
+            }
+            QLabel {
+                color: #333333;
+            }
+        """)
+        
+        # Menu page light theme
+        self.menu_page.setStyleSheet("""
+            QWidget {
+                background-color: #f0f0f0;
+            }
+            QPushButton {
+                background-color: #ffffff;
+                color: #333333;
+                border: none;
+                border-radius: 15px;
+                padding: 20px;
+                font-size: 16px;
+                font-weight: bold;
+                min-width: 200px;
+            }
+            QPushButton:hover {
+                background-color: #f5f5f5;
+            }
+        """)
 
     def show_menu(self):
         self.stacked_widget.setCurrentIndex(1)  # Show menu page
