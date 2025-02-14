@@ -167,7 +167,7 @@ class UARTInterface(QMainWindow):
         main_layout.setSpacing(20)
         main_layout.setContentsMargins(20, 10, 20, 20)  # Reduced top margin
 
-        # Display frame (moved up)
+        # Display frame with menu button
         display_frame = QFrame()
         display_frame.setStyleSheet("""
             QFrame {
@@ -185,6 +185,36 @@ class UARTInterface(QMainWindow):
         """)
         display_layout = QVBoxLayout(display_frame)
         
+        # Header container for menu button
+        header_container = QWidget()
+        header_layout = QHBoxLayout(header_container)
+        header_layout.setContentsMargins(0, 0, 0, 10)
+        
+        # Menu button
+        menu_button = QPushButton("⋮")
+        menu_button.setFixedSize(30, 30)
+        menu_button.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                color: #666666;
+                border: none;
+                border-radius: 15px;
+                font-size: 24px;
+                font-weight: bold;
+                padding: 0px;
+            }
+            QPushButton:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+                color: #ffffff;
+            }
+        """)
+        menu_button.clicked.connect(self.show_menu)
+        
+        header_layout.addStretch()
+        header_layout.addWidget(menu_button)
+        display_layout.addWidget(header_container)
+        
+        # Display labels
         self.upper_label = QLabel(" " * 20)
         self.lower_label = QLabel(" " * 20)
         self.upper_label.setAlignment(Qt.AlignCenter)
@@ -245,35 +275,6 @@ class UARTInterface(QMainWindow):
         self.display_timer.timeout.connect(lambda: send_display_command(0))
         self.display_timer.start(int(DISPLAY_UPDATE_INTERVAL * 1000))
 
-        # Menu button with adjusted size and positioning
-        menu_button = QPushButton("⋮")  # Three dots menu icon
-        menu_button.setFixedSize(40, 40)
-        menu_button.setStyleSheet("""
-            QPushButton {
-                background-color: transparent;
-                color: #666666;
-                border: none;
-                border-radius: 20px;
-                font-size: 20px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: rgba(255, 255, 255, 0.1);
-                color: #ffffff;
-            }
-        """)
-        menu_button.clicked.connect(self.show_menu)
-        
-        # Create a widget to hold the menu button with proper spacing
-        menu_container = QWidget()
-        menu_layout = QHBoxLayout(menu_container)
-        menu_layout.setContentsMargins(0, 10, 20, 0)  # Added proper margins
-        menu_layout.addStretch()
-        menu_layout.addWidget(menu_button)
-        
-        # Add menu container to the top of main layout
-        main_layout.insertWidget(0, menu_container)
-        
         # Create menu overlay
         self.menu_overlay = MenuOverlay(self)
         self.menu_overlay.hide()
