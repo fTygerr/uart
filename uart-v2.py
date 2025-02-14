@@ -70,6 +70,57 @@ class ModernButton(QPushButton):
         self._animation.setEndValue(QRect(rect.x()+2, rect.y()+2, rect.width()-4, rect.height()-4))
         self._animation.start()
 
+class MenuOverlay(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedSize(480, 800)
+        self.setStyleSheet("""
+            QWidget {
+                background-color: rgba(0, 0, 0, 0.85);
+            }
+            QPushButton {
+                background-color: #2e2e2e;
+                color: #ffffff;
+                border: none;
+                border-radius: 15px;
+                padding: 20px;
+                font-size: 16px;
+                font-weight: bold;
+                min-width: 200px;
+            }
+            QPushButton:hover {
+                background-color: #3e3e3e;
+            }
+            QPushButton:pressed {
+                background-color: #4a4a4a;
+            }
+        """)
+        
+        # Create layout
+        layout = QVBoxLayout(self)
+        layout.setAlignment(Qt.AlignCenter)
+        layout.setSpacing(20)
+        
+        # Return button
+        return_btn = QPushButton("Return to Program")
+        return_btn.clicked.connect(self.hide)
+        layout.addWidget(return_btn)
+        
+        # Exit button
+        exit_btn = QPushButton("Exit")
+        exit_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #662222;
+            }
+            QPushButton:hover {
+                background-color: #883333;
+            }
+        """)
+        exit_btn.clicked.connect(QApplication.instance().quit)
+        layout.addWidget(exit_btn)
+        
+        self.hide()
+
 class UARTInterface(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -187,6 +238,42 @@ class UARTInterface(QMainWindow):
         self.display_timer = QTimer()
         self.display_timer.timeout.connect(lambda: send_display_command(0))
         self.display_timer.start(int(DISPLAY_UPDATE_INTERVAL * 1000))
+
+        # Add menu button to top-right corner
+        menu_button = QPushButton("⋮")  # Three dots menu icon
+        menu_button.setFixedSize(40, 40)
+        menu_button.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                color: #666666;
+                border: none;
+                border-radius: 20px;
+                font-size: 20px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+                color: #ffffff;
+            }
+        """)
+        menu_button.clicked.connect(self.show_menu)
+        
+        # Create a widget to hold the menu button
+        menu_container = QWidget()
+        menu_layout = QHBoxLayout(menu_container)
+        menu_layout.setContentsMargins(0, 0, 0, 0)
+        menu_layout.addStretch()
+        menu_layout.addWidget(menu_button)
+        
+        # Add menu container to the top of main layout
+        main_layout.insertWidget(0, menu_container)
+        
+        # Create menu overlay
+        self.menu_overlay = MenuOverlay(self)
+        self.menu_overlay.hide()
+
+    def show_menu(self):
+        self.menu_overlay.show()
 
     def closeEvent(self, event):
         self.display_timer.stop()
