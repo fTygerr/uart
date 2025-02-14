@@ -150,6 +150,39 @@ class UARTInterface(QMainWindow):
         main_layout.setSpacing(20)
         main_layout.setContentsMargins(20, 10, 20, 20)
 
+        # Set the dark background for main page
+        self.main_page.setStyleSheet("""
+            QWidget {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #1a1a1a, stop:1 #2d2d2d);
+            }
+            QFrame {
+                background-color: #1e1e1e;
+                border: 2px solid #3a3a3a;
+                border-radius: 15px;
+                padding: 15px;
+            }
+            QPushButton {
+                background-color: #2e2e2e;
+                color: #ffffff;
+                border: none;
+                border-radius: 15px;
+                padding: 15px;
+                font-size: 16px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #3e3e3e;
+            }
+            QPushButton:pressed {
+                background-color: #4a4a4a;
+            }
+            QLabel {
+                color: #ffffff;
+                font-size: 14px;
+            }
+        """)
+
         # Display frame with menu button
         display_frame = QFrame()
         display_frame.setStyleSheet("""
