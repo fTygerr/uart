@@ -73,7 +73,8 @@ class ModernButton(QPushButton):
 class MenuOverlay(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setFixedSize(480, 800)
+        # Set size to match parent (fullscreen)
+        self.setGeometry(parent.geometry())
         self.setStyleSheet("""
             QWidget {
                 background-color: rgba(0, 0, 0, 0.85);
