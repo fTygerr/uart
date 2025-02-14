@@ -245,7 +245,7 @@ class UARTInterface(QMainWindow):
         self.display_timer.timeout.connect(lambda: send_display_command(0))
         self.display_timer.start(int(DISPLAY_UPDATE_INTERVAL * 1000))
 
-        # Add menu button to top-right corner
+        # Menu button with adjusted size and positioning
         menu_button = QPushButton("⋮")  # Three dots menu icon
         menu_button.setFixedSize(40, 40)
         menu_button.setStyleSheet("""
@@ -264,10 +264,10 @@ class UARTInterface(QMainWindow):
         """)
         menu_button.clicked.connect(self.show_menu)
         
-        # Create a widget to hold the menu button
+        # Create a widget to hold the menu button with proper spacing
         menu_container = QWidget()
         menu_layout = QHBoxLayout(menu_container)
-        menu_layout.setContentsMargins(0, 0, 0, 0)
+        menu_layout.setContentsMargins(0, 10, 20, 0)  # Added proper margins
         menu_layout.addStretch()
         menu_layout.addWidget(menu_button)
         
