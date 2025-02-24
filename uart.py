@@ -1,8 +1,11 @@
-import tkinter as tk
 import serial
 import os
 from threading import Timer
 import time
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+import sys
 
 # Suppress tkinter deprecation warning
 os.environ["TK_SILENCE_DEPRECATION"] = "1"
@@ -36,7 +39,459 @@ DISPLAY_UPDATE_INTERVAL = 0.75
 MAX_ERRORS = 3  # Maximum consecutive errors before showing error message
 error_counter = 0  # Global counter for consecutive errors
 
-# Command to send display data
+# Add this variable at the top with other globals
+last_key_press_time = 0
+
+class ModernButton(QPushButton):
+    def __init__(self, text, parent=None):
+        super().__init__(text, parent)
+        self.setMinimumHeight(80)
+        self.setCursor(Qt.PointingHandCursor)
+        
+        # Animation setup
+        self._animation = QPropertyAnimation(self, b"geometry")
+        self._animation.setDuration(100)
+        
+        # Shadow effect
+        self.shadow = QGraphicsDropShadowEffect()
+        self.shadow.setBlurRadius(20)
+        self.shadow.setOffset(0, 0)
+        self.shadow.setColor(QColor(0, 0, 0, 80))
+        self.setGraphicsEffect(self.shadow)
+
+    def enterEvent(self, event):
+        self.shadow.setColor(QColor(250, 175, 64, 180))
+        rect = self.geometry()
+        self._animation.setStartValue(rect)
+        self._animation.setEndValue(QRect(rect.x()-2, rect.y()-2, rect.width()+4, rect.height()+4))
+        self._animation.start()
+
+    def leaveEvent(self, event):
+        self.shadow.setColor(QColor(0, 0, 0, 80))
+        rect = self.geometry()
+        self._animation.setStartValue(rect)
+        self._animation.setEndValue(QRect(rect.x()+2, rect.y()+2, rect.width()-4, rect.height()-4))
+        self._animation.start()
+
+class MenuOverlay(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        # Set size to match parent (fullscreen)
+        self.setGeometry(parent.geometry())
+        self.setStyleSheet("""
+            QWidget {
+                background-color: #1a1a1a;
+            }
+            QPushButton {
+                background-color: #2e2e2e;
+                color: #ffffff;
+                border: none;
+                border-radius: 15px;
+                padding: 20px;
+                font-size: 16px;
+                font-weight: bold;
+                min-width: 200px;
+            }
+            QPushButton:hover {
+                background-color: #3e3e3e;
+            }
+            QPushButton:pressed {
+                background-color: #4a4a4a;
+            }
+        """)
+        
+        # Create layout
+        layout = QVBoxLayout(self)
+        layout.setAlignment(Qt.AlignCenter)
+        layout.setSpacing(20)
+        
+        # Return button
+        return_btn = QPushButton("Return to Program")
+        return_btn.clicked.connect(self.hide)
+        layout.addWidget(return_btn)
+        
+        # Exit button
+        exit_btn = QPushButton("Exit")
+        exit_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #662222;
+            }
+            QPushButton:hover {
+                background-color: #883333;
+            }
+        """)
+        exit_btn.clicked.connect(QApplication.instance().quit)
+        layout.addWidget(exit_btn)
+        
+        self.hide()
+
+class UARTInterface(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        
+        # Set window flags for true fullscreen without decorations
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        self.showFullScreen()
+        
+        # Theme state
+        self.is_dark_theme = True
+        
+        # Create stacked widget for multiple pages
+        self.stacked_widget = QStackedWidget()
+        self.setCentralWidget(self.stacked_widget)
+        
+        # Create main page
+        self.main_page = QWidget()
+        self.setup_main_page()
+        self.stacked_widget.addWidget(self.main_page)
+        
+        # Create menu page
+        self.menu_page = QWidget()
+        self.setup_menu_page()
+        self.stacked_widget.addWidget(self.menu_page)
+        
+        # Apply initial theme
+        self.apply_theme()
+
+    def setup_main_page(self):
+        # Main page layout
+        main_layout = QVBoxLayout(self.main_page)
+        main_layout.setSpacing(20)
+        main_layout.setContentsMargins(20, 10, 20, 20)
+
+        # Set the dark background for main page
+        self.main_page.setStyleSheet("""
+            QWidget {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #1a1a1a, stop:1 #2d2d2d);
+            }
+            QFrame {
+                background-color: #1e1e1e;
+                border: 2px solid #3a3a3a;
+                border-radius: 15px;
+                padding: 15px;
+            }
+            QPushButton {
+                background-color: #2e2e2e;
+                color: #ffffff;
+                border: none;
+                border-radius: 15px;
+                padding: 15px;
+                font-size: 16px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #3e3e3e;
+            }
+            QPushButton:pressed {
+                background-color: #4a4a4a;
+            }
+            QLabel {
+                color: #ffffff;
+                font-size: 14px;
+            }
+        """)
+
+        # Display frame with menu button
+        display_frame = QFrame()
+        display_frame.setObjectName("displayFrame")  # Add object name for styling
+        display_layout = QVBoxLayout(display_frame)
+        
+        # Header container for menu button
+        header_container = QWidget()
+        header_container.setStyleSheet("background: transparent;")
+        header_layout = QHBoxLayout(header_container)
+        header_layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Menu button
+        menu_button = QPushButton("⋮")
+        menu_button.setFixedSize(30, 30)
+        menu_button.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                color: #666666;
+                border: none;
+                border-radius: 15px;
+                font-size: 24px;
+                font-weight: bold;
+                padding: 0px;
+            }
+            QPushButton:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+                color: #ffffff;
+            }
+        """)
+        menu_button.clicked.connect(self.show_menu)
+        
+        header_layout.addStretch()
+        header_layout.addWidget(menu_button)
+        display_layout.addWidget(header_container)
+        
+        # Display labels
+        self.upper_label = QLabel(" " * 20)
+        self.lower_label = QLabel(" " * 20)
+        self.upper_label.setAlignment(Qt.AlignCenter)
+        self.lower_label.setAlignment(Qt.AlignCenter)
+        display_layout.addWidget(self.upper_label)
+        display_layout.addWidget(self.lower_label)
+        main_layout.addWidget(display_frame)
+
+        # Button grid in a card-like container
+        button_container = QFrame()
+        button_container.setObjectName("buttonContainer")  # Add object name for styling
+        button_layout = QGridLayout(button_container)
+        button_layout.setSpacing(15)
+        
+        self.buttons = []
+        for i in range(8):
+            row = (i // 2)
+            col = i % 2
+            button = ModernButton(KEY_LABELS[i])
+            button.clicked.connect(lambda checked, n=i: send_key_command(n))
+            button_layout.addWidget(button, row, col)
+            self.buttons.append(button)
+
+        main_layout.addWidget(button_container)
+
+        # Add stretch to push content up
+        main_layout.addStretch(1)
+
+        # Footer with version info
+        footer = QLabel("SVA Next Gen Phase II")
+        footer.setStyleSheet("""
+            QLabel {
+                color: #666666;
+                font-size: 12px;
+                font-style: italic;
+                margin-bottom: 20px;
+            }
+        """)
+        footer.setAlignment(Qt.AlignCenter)
+        main_layout.addWidget(footer)
+
+        # Setup periodic display updates
+        self.display_timer = QTimer()
+        self.display_timer.timeout.connect(lambda: send_display_command(0))
+        self.display_timer.start(int(DISPLAY_UPDATE_INTERVAL * 1000))
+
+    def setup_menu_page(self):
+        self.menu_page.setStyleSheet("""
+            QWidget {
+                background-color: #1a1a1a;
+            }
+            QPushButton {
+                background-color: #2e2e2e;
+                color: #ffffff;
+                border: none;
+                border-radius: 15px;
+                padding: 20px;
+                font-size: 16px;
+                font-weight: bold;
+                min-width: 200px;
+            }
+            QPushButton:hover {
+                background-color: #3e3e3e;
+            }
+        """)
+        
+        # Menu page layout
+        menu_layout = QVBoxLayout(self.menu_page)
+        menu_layout.setAlignment(Qt.AlignCenter)
+        menu_layout.setSpacing(20)
+        
+        # Theme toggle button
+        self.theme_btn = QPushButton("Switch to Light Theme" if self.is_dark_theme else "Switch to Dark Theme")
+        self.theme_btn.clicked.connect(self.toggle_theme)
+        menu_layout.addWidget(self.theme_btn)
+        
+        # Return button
+        return_btn = QPushButton("Return to Program")
+        return_btn.clicked.connect(self.show_main)
+        menu_layout.addWidget(return_btn)
+        
+        # Exit button
+        exit_btn = QPushButton("Exit")
+        exit_btn.setObjectName("exitButton")  # Add object name for styling
+        exit_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #662222;
+                color: #ffffff !important;  /* Force white text always */
+            }
+            QPushButton:hover {
+                background-color: #883333;
+            }
+        """)
+        exit_btn.clicked.connect(QApplication.instance().quit)
+        menu_layout.addWidget(exit_btn)
+
+    def toggle_theme(self):
+        self.is_dark_theme = not self.is_dark_theme
+        self.theme_btn.setText("Switch to Light Theme" if self.is_dark_theme else "Switch to Dark Theme")
+        self.apply_theme()
+
+    def apply_theme(self):
+        if self.is_dark_theme:
+            self.apply_dark_theme()
+        else:
+            self.apply_light_theme()
+
+    def apply_dark_theme(self):
+        # Main page dark theme
+        self.main_page.setStyleSheet("""
+            QWidget {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #1a1a1a, stop:1 #2d2d2d);
+            }
+            QFrame {
+                background-color: #1e1e1e;
+                border: 2px solid #3a3a3a;
+                border-radius: 15px;
+                padding: 15px;
+            }
+            QPushButton {
+                background-color: #2e2e2e;
+                color: #ffffff;
+                border: none;
+                border-radius: 15px;
+                padding: 15px;
+                font-size: 16px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #3e3e3e;
+            }
+            QPushButton:pressed {
+                background-color: #4a4a4a;
+            }
+            QLabel {
+                color: #ffffff;
+            }
+            
+            /* Display frame specific styles */
+            QFrame#displayFrame QLabel {
+                color: #00ff00;
+                font-family: 'Courier';
+                font-size: 18px;
+                font-weight: bold;
+            }
+        """)
+        
+        # Menu page dark theme
+        self.menu_page.setStyleSheet("""
+            QWidget {
+                background-color: #1a1a1a;
+            }
+            QPushButton {
+                background-color: #2e2e2e;
+                color: #ffffff;
+                border: none;
+                border-radius: 15px;
+                padding: 20px;
+                font-size: 16px;
+                font-weight: bold;
+                min-width: 200px;
+            }
+            QPushButton:hover {
+                background-color: #3e3e3e;
+            }
+            QPushButton#exitButton {
+                background-color: #662222;
+            }
+            QPushButton#exitButton:hover {
+                background-color: #883333;
+            }
+        """)
+
+    def apply_light_theme(self):
+        # Main page light theme
+        self.main_page.setStyleSheet("""
+            QWidget {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #f0f0f0, stop:1 #e0e0e0);
+            }
+            QFrame {
+                background-color: #ffffff;
+                border: 2px solid #dddddd;
+                border-radius: 15px;
+                padding: 15px;
+            }
+            QPushButton {
+                background-color: #f8f8f8;
+                color: #333333;
+                border: none;
+                border-radius: 15px;
+                padding: 15px;
+                font-size: 16px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #eeeeee;
+            }
+            QPushButton:pressed {
+                background-color: #e0e0e0;
+            }
+            QLabel {
+                color: #333333;
+            }
+            
+            /* Display frame specific styles */
+            QFrame#displayFrame {
+                background-color: #ffffff;
+            }
+            QFrame#displayFrame QLabel {
+                color: #0066cc;
+                font-family: 'Courier';
+                font-size: 18px;
+                font-weight: bold;
+            }
+            
+            /* Button container specific styles */
+            QFrame#buttonContainer {
+                background-color: #f5f5f5;
+            }
+        """)
+        
+        # Menu page light theme
+        self.menu_page.setStyleSheet("""
+            QWidget {
+                background-color: #f0f0f0;
+            }
+            QPushButton {
+                background-color: #ffffff;
+                color: #333333;
+                border: none;
+                border-radius: 15px;
+                padding: 20px;
+                font-size: 16px;
+                font-weight: bold;
+                min-width: 200px;
+            }
+            QPushButton:hover {
+                background-color: #f5f5f5;
+            }
+            QPushButton:pressed {
+                background-color: #e8e8e8;
+            }
+            QPushButton#exitButton {
+                background-color: #662222;
+                color: #ffffff;
+            }
+            QPushButton#exitButton:hover {
+                background-color: #883333;
+            }
+        """)
+
+    def show_menu(self):
+        self.stacked_widget.setCurrentIndex(1)  # Show menu page
+
+    def show_main(self):
+        self.stacked_widget.setCurrentIndex(0)  # Show main page
+
+    def closeEvent(self, event):
+        self.display_timer.stop()
+        event.accept()
+
+# Modify your display update function to work with Qt labels
 def send_display_command(n):
     global error_counter
     command = f"DISPLAY {n}\r"
@@ -46,23 +501,19 @@ def send_display_command(n):
         ser.reset_input_buffer()
         ser.reset_output_buffer()
         ser.write(command.encode())
-     
-        # Read exactly 41 characters (40 display chars + CR)
-        response = ser.read(41)
+        response = ser.read(41)  # Read exactly 41 characters (40 display chars + CR)
         
         if not response:
             error_counter += 1
             print(f"[WARNING] No response from VMC (Attempt {error_counter}/{MAX_ERRORS})")
             if error_counter >= MAX_ERRORS:
-                upper_label.config(text="Timeout Error")
-                lower_label.config(text="No VMC Response")
+                window.upper_label.setText("Timeout Error")
+                window.lower_label.setText("No VMC Response")
                 error_counter = MAX_ERRORS
             return
             
-        # Success - reset error counter
-        error_counter = 0
+        error_counter = 0  # Success - reset error counter
         
-        # Remove the trailing CR if present
         if response.endswith(b'\r'):
             response = response[:-1]
             
@@ -72,34 +523,19 @@ def send_display_command(n):
         if len(response_str) == 40:
             upper_line = response_str[:20]
             lower_line = response_str[20:]
-            upper_label.config(text=upper_line)
-            lower_label.config(text=lower_line)
+            window.upper_label.setText(upper_line)
+            window.lower_label.setText(lower_line)
             print(f"[LOG] Display updated: {response_str}")
-        # elif: response_str == "NACK":
-        #     upper_label.config(text="NACK Received")
-        #     lower_label.config(text="Invalid Command")
-        #     print("[WARNING] Received NACK. Invalid DISPLAY command parameter.")
-        # else:
-        #     upper_label.config(text="Error - Invalid")
-        #     lower_label.config(text="String Length")
-        #     print(f"[WARNING] Invalid response length: {len(response_str)} chars")
             
     except (serial.SerialTimeoutException, Exception) as e:
         error_counter += 1
         print(f"[WARNING] Communication error (Attempt {error_counter}/{MAX_ERRORS}): {e}")
         
         if error_counter >= MAX_ERRORS:
-            upper_label.config(text="Error")
-            lower_label.config(text="Check Connection")
+            window.upper_label.setText("Error")
+            window.lower_label.setText("Check Connection")
             error_counter = MAX_ERRORS
             print("[ERROR] Max consecutive errors reached")
-
-# Modify the periodic update to add a small delay after key presses
-last_key_press_time = 0  # Add this with other globals
-
-def periodic_display_update():
-    send_display_command(0)
-    Timer(DISPLAY_UPDATE_INTERVAL, periodic_display_update).start()
 
 # Command execution function
 def send_key_command(key_number):
@@ -111,119 +547,31 @@ def send_key_command(key_number):
         ser.reset_input_buffer()
         ser.reset_output_buffer()
         ser.write(command.encode())
-
+        
         response = ser.read_until(b'\r').decode().strip()
-        print(f"[DEBUG] Raw key response: '{response}'")  # Debug line
+        print(f"[DEBUG] Raw key response: '{response}'")
 
         if response:
             print(f"[LOG] Received response: {response}")
-            # if response == "ACK":
-            #     key_labels[key_number].config(text=f"Key {key_number}: ACK")
-            # elif response == "NACK":
-            #     key_labels[key_number].config(text=f"Key {key_number}: NACK")
-            # else:
-            #     key_labels[key_number].config(text=f"Key {key_number}: UNKNOWN")
         else:
             print("[WARNING] No response received from hardware.")
-            # key_labels[key_number].config(text=f"Key {key_number}: No Response")
-        last_key_press_time = time.time()  # Update the timestamp after key press
+            
+        last_key_press_time = time.time()
+        
     except Exception as e:
         print(f"[ERROR] Failed to send command: {e}")
-        # key_labels[key_number].config(text=f"Key {key_number}: Error")
 
-# Close the application function
-def close_application(event):
-    root.quit()
-
-# GUI Setup
-root = tk.Tk()
-root.title("UART Communicator - Keypad Interface")
-root.configure(bg="#01331A")  # Match root background with frame
-# root.attributes("-fullscreen", True)  # Commented out fullscreen
-root.geometry("480x800")  # Set a fixed window size instead
-root.bind("<Escape>", close_application)
-
-# Frame for buttons and labels
-frame = tk.Frame(root, bg="#01331A", width=480, height=800)  # Full-screen frame
-frame.place(relx=0.5, rely=0.5, anchor="center")
-
-# Display area with border
-display_frame = tk.Frame(frame, bg="black", highlightbackground="white", highlightthickness=2)
-display_frame.grid(row=0, column=0, columnspan=2, pady=(10, 20))
-
-# Add two 20-character lines in the display
-upper_label = tk.Label(
-    display_frame,
-    text=" " * 20,  # Placeholder text
-    bg="black",
-    fg="white",
-    font=("Courier", 16, "bold"),
-    anchor="w",
-    width=20
-)
-upper_label.pack(pady=5)
-
-lower_label = tk.Label(
-    display_frame,
-    text=" " * 20,  # Placeholder text
-    bg="black",
-    fg="white",
-    font=("Courier", 16, "bold"),
-    anchor="w",
-    width=20
-)
-lower_label.pack(pady=5)
-
-# Create buttons and labels
-buttons = []
-# key_labels = []
-
-for i in range(8):  # 8 keys (0-7)
-    row = (i // 2) + 2
-    col = i % 2
-
-    # Button for each key
-    button = tk.Button(
-        frame,
-        text=KEY_LABELS[i],
-        width=10,  # Reduced button width
-        height=2,  # Reduced button height
-        bg="#01331A",
-        fg="#FAAF40",
-        activebackground="#01331A",
-        activeforeground="#FAAF40",
-        highlightbackground="#C1C1C1",
-        highlightthickness=2,
-        font=("Arial", 14, "bold"),
-        command=lambda n=i: send_key_command(n)
-    )
-    button.grid(row=row * 2, column=col, padx=20, pady=20)
-    buttons.append(button)
-
-    # Label below each button
-    # label = tk.Label(
-    #     frame,
-    #     text=f"Key {i}: Waiting",
-    #     bg="#01331A",
-    #     fg="#FAAF40",
-    #     font=("Arial", 10)
-    # )
-    # label.grid(row=row * 2 + 1, column=col, padx=5, pady=5)
-    # key_labels.append(label)
-
-# Add footer text
-footer = tk.Label(
-    root,
-    text="SVA Next Gen Phase II",
-    bg="#01331A",
-    fg="#FAAF40",
-    font=("Arial", 10, "italic")
-)
-footer.place(relx=0.5, rely=1.0, anchor="s", y=-5)
-
-# Start periodic display updates
-print("[LOG] Starting periodic display updates.")
-Timer(DISPLAY_UPDATE_INTERVAL, periodic_display_update).start()
-
-print("[LOG] GUI initialized. Ready for interaction.")
-root.mainloop()
+if __name__ == "__main__":
+    # Initialize Qt application
+    app = QApplication(sys.argv)
+    
+    # Enable high DPI scaling
+    app.setAttribute(Qt.AA_EnableHighDpiScaling)
+    app.setAttribute(Qt.AA_UseHighDpiPixmaps)
+    
+    # Create main window
+    window = UARTInterface()
+    window.show()
+    
+    # Start Qt event loop
+    sys.exit(app.exec_())
