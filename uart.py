@@ -177,7 +177,7 @@ class UARTInterface(QMainWindow):
                 border: none;
                 border-radius: 15px;
                 padding: 15px;
-                font-size: 18px;  /* Increased font size for larger screen */
+                font-size: 22px;  /* Increased font size for buttons */
                 font-weight: bold;
             }
             QPushButton:hover {
@@ -188,7 +188,7 @@ class UARTInterface(QMainWindow):
             }
             QLabel {
                 color: #ffffff;
-                font-size: 16px;  /* Increased font size for larger screen */
+                font-size: 16px;  /* Base font size for other labels */
             }
         """)
 
@@ -198,7 +198,7 @@ class UARTInterface(QMainWindow):
         # Display frame with menu button
         display_frame = QFrame()
         display_frame.setObjectName("displayFrame")
-        display_frame.setFixedHeight(150)  # Increased height for larger screen
+        display_frame.setFixedHeight(200)  # Increased height for larger display box (was 150)
         display_layout = QVBoxLayout(display_frame)
         
         # Header container for menu button
@@ -236,8 +236,8 @@ class UARTInterface(QMainWindow):
         self.lower_label = QLabel(" " * 20)
         self.upper_label.setAlignment(Qt.AlignCenter)
         self.lower_label.setAlignment(Qt.AlignCenter)
-        self.upper_label.setStyleSheet("font-size: 20px;")  # Increased font size
-        self.lower_label.setStyleSheet("font-size: 20px;")  # Increased font size
+        self.upper_label.setStyleSheet("font-size: 24px;")  # Increased font size (was 20px)
+        self.lower_label.setStyleSheet("font-size: 24px;")  # Increased font size (was 20px)
         display_layout.addWidget(self.upper_label)
         display_layout.addWidget(self.lower_label)
         main_layout.addWidget(display_frame)
@@ -248,6 +248,7 @@ class UARTInterface(QMainWindow):
         # Button grid in a card-like container
         button_container = QFrame()
         button_container.setObjectName("buttonContainer")
+        button_container.setFixedHeight(500)  # Set a fixed height for the button container (adjust as needed)
         button_layout = QGridLayout(button_container)
         button_layout.setSpacing(20)  # Increased spacing for larger screen
         
@@ -256,7 +257,7 @@ class UARTInterface(QMainWindow):
             row = (i // 2)
             col = i % 2
             button = ModernButton(KEY_LABELS[i])
-            button.setMinimumHeight(100)  # Increased button height for larger screen
+            button.setMinimumHeight(120)  # Increased button height (was 100)
             button.clicked.connect(lambda checked, n=i: send_key_command(n))
             button_layout.addWidget(button, row, col)
             self.buttons.append(button)
