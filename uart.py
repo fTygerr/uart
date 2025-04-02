@@ -154,125 +154,135 @@ class UARTInterface(QMainWindow):
         self.apply_theme()
 
     def setup_main_page(self):
-        # Main page layout
-        main_layout = QVBoxLayout(self.main_page)
-        main_layout.setSpacing(20)
-        main_layout.setContentsMargins(20, 10, 20, 5)  # Reduced bottom margin from 20 to 5
+    # Main page layout
+    main_layout = QVBoxLayout(self.main_page)
+    main_layout.setSpacing(20)
+    main_layout.setContentsMargins(20, 10, 20, 20)
 
-        # Set the dark background for main page
-        self.main_page.setStyleSheet("""
-            QWidget {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 #1a1a1a, stop:1 #2d2d2d);
-            }
-            QFrame {
-                background-color: #1e1e1e;
-                border: 2px solid #3a3a3a;
-                border-radius: 15px;
-                padding: 15px;
-            }
-            QPushButton {
-                background-color: #2e2e2e;
-                color: #ffffff;
-                border: none;
-                border-radius: 15px;
-                padding: 15px;
-                font-size: 16px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #3e3e3e;
-            }
-            QPushButton:pressed {
-                background-color: #4a4a4a;
-            }
-            QLabel {
-                color: #ffffff;
-                font-size: 14px;
-            }
-        """)
+    # Set the dark background for main page
+    self.main_page.setStyleSheet("""
+        QWidget {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 #1a1a1a, stop:1 #2d2d2d);
+        }
+        QFrame {
+            background-color: #1e1e1e;
+            border: 2px solid #3a3a3a;
+            border-radius: 15px;
+            padding: 15px;
+        }
+        QPushButton {
+            background-color: #2e2e2e;
+            color: #ffffff;
+            border: none;
+            border-radius: 15px;
+            padding: 15px;
+            font-size: 18px;  /* Increased font size for larger screen */
+            font-weight: bold;
+        }
+        QPushButton:hover {
+            background-color: #3e3e3e;
+        }
+        QPushButton:pressed {
+            background-color: #4a4a4a;
+        }
+        QLabel {
+            color: #ffffff;
+            font-size: 16px;  /* Increased font size for larger screen */
+        }
+    """)
 
-        # Display frame with menu button
-        display_frame = QFrame()
-        display_frame.setObjectName("displayFrame")  # Add object name for styling
-        display_layout = QVBoxLayout(display_frame)
-        
-        # Header container for menu button
-        header_container = QWidget()
-        header_container.setStyleSheet("background: transparent;")
-        header_layout = QHBoxLayout(header_container)
-        header_layout.setContentsMargins(0, 0, 0, 0)
-        
-        # Menu button
-        menu_button = QPushButton("⋮")
-        menu_button.setFixedSize(30, 30)
-        menu_button.setStyleSheet("""
-            QPushButton {
-                background-color: transparent;
-                color: #666666;
-                border: none;
-                border-radius: 15px;
-                font-size: 24px;
-                font-weight: bold;
-                padding: 0px;
-            }
-            QPushButton:hover {
-                background-color: rgba(255, 255, 255, 0.1);
-                color: #ffffff;
-            }
-        """)
-        menu_button.clicked.connect(self.show_menu)
-        
-        header_layout.addStretch()
-        header_layout.addWidget(menu_button)
-        display_layout.addWidget(header_container)
-        
-        # Display labels
-        self.upper_label = QLabel(" " * 20)
-        self.lower_label = QLabel(" " * 20)
-        self.upper_label.setAlignment(Qt.AlignCenter)
-        self.lower_label.setAlignment(Qt.AlignCenter)
-        display_layout.addWidget(self.upper_label)
-        display_layout.addWidget(self.lower_label)
-        main_layout.addWidget(display_frame)
+    # Add stretch at the top to push content down slightly
+    main_layout.addStretch(2)  # Adjust this value to control top spacing
 
-        # Button grid in a card-like container
-        button_container = QFrame()
-        button_container.setObjectName("buttonContainer")  # Add object name for styling
-        button_layout = QGridLayout(button_container)
-        button_layout.setSpacing(15)
-        
-        self.buttons = []
-        for i in range(8):
-            row = (i // 2)
-            col = i % 2
-            button = ModernButton(KEY_LABELS[i])
-            button.clicked.connect(lambda checked, n=i: send_key_command(n))
-            button_layout.addWidget(button, row, col)
-            self.buttons.append(button)
+    # Display frame with menu button
+    display_frame = QFrame()
+    display_frame.setObjectName("displayFrame")
+    display_frame.setFixedHeight(150)  # Increased height for larger screen
+    display_layout = QVBoxLayout(display_frame)
+    
+    # Header container for menu button
+    header_container = QWidget()
+    header_container.setStyleSheet("background: transparent;")
+    header_layout = QHBoxLayout(header_container)
+    header_layout.setContentsMargins(0, 0, 0, 0)
+    
+    # Menu button
+    menu_button = QPushButton("⋮")
+    menu_button.setFixedSize(40, 40)  # Slightly larger for better touch interaction
+    menu_button.setStyleSheet("""
+        QPushButton {
+            background-color: transparent;
+            color: #666666;
+            border: none;
+            border-radius: 15px;
+            font-size: 28px;  /* Increased font size */
+            font-weight: bold;
+            padding: 0px;
+        }
+        QPushButton:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+    """)
+    menu_button.clicked.connect(self.show_menu)
+    
+    header_layout.addStretch()
+    header_layout.addWidget(menu_button)
+    display_layout.addWidget(header_container)
+    
+    # Display labels
+    self.upper_label = QLabel(" " * 20)
+    self.lower_label = QLabel(" " * 20)
+    self.upper_label.setAlignment(Qt.AlignCenter)
+    self.lower_label.setAlignment(Qt.AlignCenter)
+    self.upper_label.setStyleSheet("font-size: 20px;")  # Increased font size
+    self.lower_label.setStyleSheet("font-size: 20px;")  # Increased font size
+    display_layout.addWidget(self.upper_label)
+    display_layout.addWidget(self.lower_label)
+    main_layout.addWidget(display_frame)
 
-        main_layout.addWidget(button_container)
+    # Add stretch between display and buttons for balanced spacing
+    main_layout.addStretch(3)  # Adjust this value to control spacing between display and buttons
 
-        # Add stretch to push content up
-        main_layout.addStretch(1)
+    # Button grid in a card-like container
+    button_container = QFrame()
+    button_container.setObjectName("buttonContainer")
+    button_layout = QGridLayout(button_container)
+    button_layout.setSpacing(20)  # Increased spacing for larger screen
+    
+    self.buttons = []
+    for i in range(8):
+        row = (i // 2)
+        col = i % 2
+        button = ModernButton(KEY_LABELS[i])
+        button.setMinimumHeight(100)  # Increased button height for larger screen
+        button.clicked.connect(lambda checked, n=i: send_key_command(n))
+        button_layout.addWidget(button, row, col)
+        self.buttons.append(button)
 
-        # Footer with version info
-        footer = QLabel("SVA Next Gen Phase II")
-        footer.setStyleSheet("""
-            QLabel {
-                color: #666666;
-                font-size: 12px;
-                font-style: italic;
-                margin-bottom: 20px;
-            }
-        """)
-        footer.setAlignment(Qt.AlignCenter)
-        main_layout.addWidget(footer)
+    main_layout.addWidget(button_container)
 
-        # Setup periodic display updates
-        self.display_timer = QTimer()
-        self.display_timer.timeout.connect(lambda: send_display_command(0))
-        self.display_timer.start(int(DISPLAY_UPDATE_INTERVAL * 1000))
+    # Add stretch to push footer to the bottom
+    main_layout.addStretch(4)  # Adjust this value to control spacing below buttons
+
+    # Footer with version info
+    footer = QLabel("SVA Next Gen Phase II")
+    footer.setStyleSheet("""
+        QLabel {
+            color: #666666;
+            font-size: 14px;  /* Slightly larger font for larger screen */
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+    """)
+    footer.setAlignment(Qt.AlignCenter)
+    main_layout.addWidget(footer)
+
+    # Setup periodic display updates
+    self.display_timer = QTimer()
+    self.display_timer.timeout.connect(lambda: send_display_command(0))
+    self.display_timer.start(int(DISPLAY_UPDATE_INTERVAL * 1000))
 
     def setup_menu_page(self):
         self.menu_page.setStyleSheet("""
