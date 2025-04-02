@@ -192,12 +192,9 @@ class UARTInterface(QMainWindow):
             }
         """)
 
-        # Add top stretch to push content down
-        main_layout.addStretch(1)
-
         # Display frame with menu button
         display_frame = QFrame()
-        display_frame.setObjectName("displayFrame")
+        display_frame.setObjectName("displayFrame")  # Add object name for styling
         display_layout = QVBoxLayout(display_frame)
         
         # Header container for menu button
@@ -241,7 +238,7 @@ class UARTInterface(QMainWindow):
 
         # Button grid in a card-like container
         button_container = QFrame()
-        button_container.setObjectName("buttonContainer")
+        button_container.setObjectName("buttonContainer")  # Add object name for styling
         button_layout = QGridLayout(button_container)
         button_layout.setSpacing(15)
         
@@ -256,7 +253,7 @@ class UARTInterface(QMainWindow):
 
         main_layout.addWidget(button_container)
 
-        # Add bottom stretch to push content up
+        # Add stretch to push content up
         main_layout.addStretch(1)
 
         # Footer with version info
@@ -349,15 +346,15 @@ class UARTInterface(QMainWindow):
                 background-color: #1e1e1e;
                 border: 2px solid #3a3a3a;
                 border-radius: 15px;
-                padding: 20px;  # Increased padding
+                padding: 15px;
             }
             QPushButton {
                 background-color: #2e2e2e;
                 color: #ffffff;
                 border: none;
                 border-radius: 15px;
-                padding: 20px;  # Increased padding
-                font-size: 18px;  # Increased font size
+                padding: 15px;
+                font-size: 16px;
                 font-weight: bold;
             }
             QPushButton:hover {
@@ -416,15 +413,15 @@ class UARTInterface(QMainWindow):
                 background-color: #ffffff;
                 border: 2px solid #dddddd;
                 border-radius: 15px;
-                padding: 20px;  # Increased padding
+                padding: 15px;
             }
             QPushButton {
                 background-color: #f8f8f8;
                 color: #333333;
                 border: none;
                 border-radius: 15px;
-                padding: 20px;  # Increased padding
-                font-size: 18px;  # Increased font size
+                padding: 15px;
+                font-size: 16px;
                 font-weight: bold;
             }
             QPushButton:hover {
