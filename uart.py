@@ -157,7 +157,7 @@ class UARTInterface(QMainWindow):
         # Main page layout
         main_layout = QVBoxLayout(self.main_page)
         main_layout.setSpacing(20)
-        main_layout.setContentsMargins(20, 10, 20, 20)
+        main_layout.setContentsMargins(20, 100, 20, 10)  # Increased top margin to 100, reduced bottom to 10
 
         # Set the dark background for main page
         self.main_page.setStyleSheet("""
@@ -253,9 +253,6 @@ class UARTInterface(QMainWindow):
 
         main_layout.addWidget(button_container)
 
-        # Add stretch to push content up
-        main_layout.addStretch(1)
-
         # Footer with version info
         footer = QLabel("SVA Next Gen Phase II")
         footer.setStyleSheet("""
@@ -263,7 +260,7 @@ class UARTInterface(QMainWindow):
                 color: #666666;
                 font-size: 12px;
                 font-style: italic;
-                margin-bottom: 20px;
+                margin-bottom: 10px;  # Reduced from 20px to 10px
             }
         """)
         footer.setAlignment(Qt.AlignCenter)
