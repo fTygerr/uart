@@ -253,6 +253,9 @@ class UARTInterface(QMainWindow):
 
         main_layout.addWidget(button_container)
 
+        # Add stretch to push footer down
+        main_layout.addStretch(1)
+
         # Footer with version info
         footer = QLabel("SVA Next Gen Phase II")
         footer.setStyleSheet("""
@@ -260,7 +263,8 @@ class UARTInterface(QMainWindow):
                 color: #666666;
                 font-size: 12px;
                 font-style: italic;
-                margin-bottom: 10px;  # Reduced from 20px to 10px
+                margin: 0px;
+                padding: 5px;
             }
         """)
         footer.setAlignment(Qt.AlignCenter)
