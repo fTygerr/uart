@@ -157,7 +157,7 @@ class UARTInterface(QMainWindow):
         # Main page layout
         main_layout = QVBoxLayout(self.main_page)
         main_layout.setSpacing(20)
-        main_layout.setContentsMargins(20, 100, 20, 10)  # Increased top margin to 100, reduced bottom to 10
+        main_layout.setContentsMargins(20, 100, 20, 0)  # Removed bottom margin
 
         # Set the dark background for main page
         self.main_page.setStyleSheet("""
@@ -264,10 +264,12 @@ class UARTInterface(QMainWindow):
                 font-size: 12px;
                 font-style: italic;
                 margin: 0px;
-                padding: 5px;
+                padding: 2px;
+                background: transparent;
             }
         """)
         footer.setAlignment(Qt.AlignCenter)
+        footer.setFixedHeight(20)  # Fixed small height for footer
         main_layout.addWidget(footer)
 
         # Setup periodic display updates
