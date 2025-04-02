@@ -131,6 +131,9 @@ class UARTInterface(QMainWindow):
         
         # Set window flags for true fullscreen without decorations
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        
+        # Rotate the window for vertical orientation
+        self.setGeometry(0, 0, 600, 1920)  # Standard 10.1" display resolution when rotated
         self.showFullScreen()
         
         # Theme state
@@ -157,7 +160,7 @@ class UARTInterface(QMainWindow):
         # Main page layout
         main_layout = QVBoxLayout(self.main_page)
         main_layout.setSpacing(20)
-        main_layout.setContentsMargins(20, 100, 20, 0)  # Removed bottom margin
+        main_layout.setContentsMargins(20, 10, 20, 20)
 
         # Set the dark background for main page
         self.main_page.setStyleSheet("""
@@ -253,7 +256,7 @@ class UARTInterface(QMainWindow):
 
         main_layout.addWidget(button_container)
 
-        # Add stretch to push footer down
+        # Add stretch to push content up
         main_layout.addStretch(1)
 
         # Footer with version info
@@ -263,13 +266,10 @@ class UARTInterface(QMainWindow):
                 color: #666666;
                 font-size: 12px;
                 font-style: italic;
-                margin: 0px;
-                padding: 2px;
-                background: transparent;
+                margin-bottom: 20px;
             }
         """)
         footer.setAlignment(Qt.AlignCenter)
-        footer.setFixedHeight(20)  # Fixed small height for footer
         main_layout.addWidget(footer)
 
         # Setup periodic display updates
