@@ -156,8 +156,8 @@ class UARTInterface(QMainWindow):
     def setup_main_page(self):
         # Main page layout
         main_layout = QVBoxLayout(self.main_page)
-        main_layout.setSpacing(30)  # Increased spacing between components
-        main_layout.setContentsMargins(20, 40, 20, 40)  # Increased top and bottom margins
+        main_layout.setSpacing(20)
+        main_layout.setContentsMargins(20, 10, 20, 20)
 
         # Set the dark background for main page
         self.main_page.setStyleSheet("""
@@ -169,15 +169,15 @@ class UARTInterface(QMainWindow):
                 background-color: #1e1e1e;
                 border: 2px solid #3a3a3a;
                 border-radius: 15px;
-                padding: 20px;  # Increased padding
+                padding: 15px;
             }
             QPushButton {
                 background-color: #2e2e2e;
                 color: #ffffff;
                 border: none;
                 border-radius: 15px;
-                padding: 20px;  # Increased padding
-                font-size: 18px;  # Increased font size
+                padding: 15px;
+                font-size: 16px;
                 font-weight: bold;
             }
             QPushButton:hover {
@@ -188,19 +188,14 @@ class UARTInterface(QMainWindow):
             }
             QLabel {
                 color: #ffffff;
-                font-size: 16px;  # Increased font size
+                font-size: 14px;
             }
         """)
 
-        # Add top stretch to push content down
-        main_layout.addStretch(1)
-
         # Display frame with menu button
         display_frame = QFrame()
-        display_frame.setObjectName("displayFrame")
-        display_frame.setMinimumHeight(200)  # Added minimum height
+        display_frame.setObjectName("displayFrame")  # Add object name for styling
         display_layout = QVBoxLayout(display_frame)
-        display_layout.setSpacing(15)  # Increased spacing
         
         # Header container for menu button
         header_container = QWidget()
@@ -210,14 +205,14 @@ class UARTInterface(QMainWindow):
         
         # Menu button
         menu_button = QPushButton("⋮")
-        menu_button.setFixedSize(40, 40)  # Increased size
+        menu_button.setFixedSize(30, 30)
         menu_button.setStyleSheet("""
             QPushButton {
                 background-color: transparent;
                 color: #666666;
                 border: none;
-                border-radius: 20px;
-                font-size: 28px;  # Increased font size
+                border-radius: 15px;
+                font-size: 24px;
                 font-weight: bold;
                 padding: 0px;
             }
@@ -232,40 +227,33 @@ class UARTInterface(QMainWindow):
         header_layout.addWidget(menu_button)
         display_layout.addWidget(header_container)
         
-        # Display labels with increased size
+        # Display labels
         self.upper_label = QLabel(" " * 20)
         self.lower_label = QLabel(" " * 20)
         self.upper_label.setAlignment(Qt.AlignCenter)
         self.lower_label.setAlignment(Qt.AlignCenter)
-        self.upper_label.setStyleSheet("font-size: 24px;")  # Increased font size
-        self.lower_label.setStyleSheet("font-size: 24px;")  # Increased font size
         display_layout.addWidget(self.upper_label)
         display_layout.addWidget(self.lower_label)
         main_layout.addWidget(display_frame)
 
-        # Add spacing between display and buttons
-        main_layout.addSpacing(30)
-
         # Button grid in a card-like container
         button_container = QFrame()
-        button_container.setObjectName("buttonContainer")
-        button_container.setMinimumHeight(400)  # Added minimum height
+        button_container.setObjectName("buttonContainer")  # Add object name for styling
         button_layout = QGridLayout(button_container)
-        button_layout.setSpacing(20)  # Increased spacing between buttons
+        button_layout.setSpacing(15)
         
         self.buttons = []
         for i in range(8):
             row = (i // 2)
             col = i % 2
             button = ModernButton(KEY_LABELS[i])
-            button.setMinimumHeight(100)  # Increased button height
             button.clicked.connect(lambda checked, n=i: send_key_command(n))
             button_layout.addWidget(button, row, col)
             self.buttons.append(button)
 
         main_layout.addWidget(button_container)
 
-        # Add bottom stretch to push content up
+        # Add stretch to push content up
         main_layout.addStretch(1)
 
         # Footer with version info
@@ -273,7 +261,7 @@ class UARTInterface(QMainWindow):
         footer.setStyleSheet("""
             QLabel {
                 color: #666666;
-                font-size: 14px;  # Increased font size
+                font-size: 12px;
                 font-style: italic;
                 margin-bottom: 20px;
             }
@@ -358,15 +346,15 @@ class UARTInterface(QMainWindow):
                 background-color: #1e1e1e;
                 border: 2px solid #3a3a3a;
                 border-radius: 15px;
-                padding: 20px;  # Increased padding
+                padding: 15px;
             }
             QPushButton {
                 background-color: #2e2e2e;
                 color: #ffffff;
                 border: none;
                 border-radius: 15px;
-                padding: 20px;  # Increased padding
-                font-size: 18px;  # Increased font size
+                padding: 15px;
+                font-size: 16px;
                 font-weight: bold;
             }
             QPushButton:hover {
@@ -425,15 +413,15 @@ class UARTInterface(QMainWindow):
                 background-color: #ffffff;
                 border: 2px solid #dddddd;
                 border-radius: 15px;
-                padding: 20px;  # Increased padding
+                padding: 15px;
             }
             QPushButton {
                 background-color: #f8f8f8;
                 color: #333333;
                 border: none;
                 border-radius: 15px;
-                padding: 20px;  # Increased padding
-                font-size: 18px;  # Increased font size
+                padding: 15px;
+                font-size: 16px;
                 font-weight: bold;
             }
             QPushButton:hover {
