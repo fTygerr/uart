@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 import sys
+import uuid
 
 # Suppress tkinter deprecation warning
 os.environ["TK_SILENCE_DEPRECATION"] = "1"
@@ -177,7 +178,7 @@ class UARTInterface(QMainWindow):
                 border: none;
                 border-radius: 15px;
                 padding: 15px;
-                font-size: 22px;  /* Font size for buttons */
+                font-size: 36px;  /* Significantly increased font size */
                 font-weight: bold;
             }
             QPushButton:hover {
@@ -188,7 +189,7 @@ class UARTInterface(QMainWindow):
             }
             QLabel {
                 color: #ffffff;
-                font-size: 16px;  /* Base font size for other labels */
+                font-size: 24px;  /* Increased base font size */
             }
         """)
 
@@ -237,8 +238,8 @@ class UARTInterface(QMainWindow):
         self.lower_label = QLabel(" " * 20)
         self.upper_label.setAlignment(Qt.AlignCenter)
         self.lower_label.setAlignment(Qt.AlignCenter)
-        self.upper_label.setStyleSheet("font-size: 24px; padding: 10px;")  # Added padding
-        self.lower_label.setStyleSheet("font-size: 24px; padding: 10px;")  # Added padding
+        self.upper_label.setStyleSheet("font-size: 36px; padding: 10px;")  # Significantly increased font size
+        self.lower_label.setStyleSheet("font-size: 36px; padding: 10px;")  # Significantly increased font size
         display_layout.addWidget(self.upper_label)
         display_layout.addWidget(self.lower_label)
         main_layout.addWidget(display_frame)
@@ -366,7 +367,7 @@ class UARTInterface(QMainWindow):
                 border: none;
                 border-radius: 15px;
                 padding: 15px;
-                font-size: 16px;
+                font-size: 36px;  /* Significantly increased font size */
                 font-weight: bold;
             }
             QPushButton:hover {
@@ -383,7 +384,7 @@ class UARTInterface(QMainWindow):
             QFrame#displayFrame QLabel {
                 color: #00ff00;
                 font-family: 'Courier';
-                font-size: 18px;
+                font-size: 36px;  /* Significantly increased font size */
                 font-weight: bold;
             }
         """)
@@ -433,7 +434,7 @@ class UARTInterface(QMainWindow):
                 border: none;
                 border-radius: 15px;
                 padding: 15px;
-                font-size: 16px;
+                font-size: 36px;  /* Significantly increased font size */
                 font-weight: bold;
             }
             QPushButton:hover {
@@ -453,7 +454,7 @@ class UARTInterface(QMainWindow):
             QFrame#displayFrame QLabel {
                 color: #0066cc;
                 font-family: 'Courier';
-                font-size: 18px;
+                font-size: 36px;  /* Significantly increased font size */
                 font-weight: bold;
             }
             
