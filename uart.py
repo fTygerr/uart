@@ -7,6 +7,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 import sys
 import uuid
+import psutil  # For CPU usage monitoring
 
 # Suppress tkinter deprecation warning
 os.environ["TK_SILENCE_DEPRECATION"] = "1"
@@ -137,6 +138,9 @@ class UARTInterface(QMainWindow):
         # Theme state
         self.is_dark_theme = True
         
+        # CPU usage display state
+        self.show_cpu_usage = False
+        
         # Create stacked widget for multiple pages
         self.stacked_widget = QStackedWidget()
         self.setCentralWidget(self.stacked_widget)
@@ -244,6 +248,22 @@ class UARTInterface(QMainWindow):
         display_layout.addWidget(self.lower_label)
         main_layout.addWidget(display_frame)
 
+        # CPU Usage display frame (initially hidden)
+        self.cpu_frame = QFrame()
+        self.cpu_frame.setObjectName("cpuFrame")
+        self.cpu_frame.setFixedHeight(100)  # Smaller than main display
+        cpu_layout = QVBoxLayout(self.cpu_frame)
+        cpu_layout.setSpacing(10)
+        
+        # CPU usage label
+        self.cpu_label = QLabel("CPU Usage: 0%")
+        self.cpu_label.setAlignment(Qt.AlignCenter)
+        self.cpu_label.setStyleSheet("font-size: 24px; padding: 10px;")
+        cpu_layout.addWidget(self.cpu_label)
+        
+        main_layout.addWidget(self.cpu_frame)
+        self.cpu_frame.hide()  # Initially hidden
+
         # Add stretch between display and buttons for balanced spacing
         main_layout.addStretch(3)  # Adjust this value to control spacing between display and buttons
 
@@ -284,7 +304,7 @@ class UARTInterface(QMainWindow):
 
         # Setup periodic display updates
         self.display_timer = QTimer()
-        self.display_timer.timeout.connect(lambda: send_display_command(0))
+        self.display_timer.timeout.connect(self.update_displays)
         self.display_timer.start(int(DISPLAY_UPDATE_INTERVAL * 1000))
 
     def setup_menu_page(self):
@@ -317,6 +337,11 @@ class UARTInterface(QMainWindow):
         self.theme_btn.clicked.connect(self.toggle_theme)
         menu_layout.addWidget(self.theme_btn)
         
+        # CPU usage toggle button
+        self.cpu_toggle_btn = QPushButton("Show CPU Usage" if not self.show_cpu_usage else "Hide CPU Usage")
+        self.cpu_toggle_btn.clicked.connect(self.toggle_cpu_usage)
+        menu_layout.addWidget(self.cpu_toggle_btn)
+        
         # Return button
         return_btn = QPushButton("Return to Program")
         return_btn.clicked.connect(self.show_main)
@@ -341,6 +366,31 @@ class UARTInterface(QMainWindow):
         self.is_dark_theme = not self.is_dark_theme
         self.theme_btn.setText("Switch to Light Theme" if self.is_dark_theme else "Switch to Dark Theme")
         self.apply_theme()
+
+    def toggle_cpu_usage(self):
+        self.show_cpu_usage = not self.show_cpu_usage
+        self.cpu_toggle_btn.setText("Hide CPU Usage" if self.show_cpu_usage else "Show CPU Usage")
+        
+        if self.show_cpu_usage:
+            self.cpu_frame.show()
+        else:
+            self.cpu_frame.hide()
+
+    def update_displays(self):
+        # Update UART display
+        send_display_command(0)
+        
+        # Update CPU usage if enabled
+        if self.show_cpu_usage:
+            self.update_cpu_usage()
+    
+    def update_cpu_usage(self):
+        try:
+            cpu_percent = psutil.cpu_percent(interval=None)
+            self.cpu_label.setText(f"CPU Usage: {cpu_percent:.1f}%")
+        except Exception as e:
+            print(f"[ERROR] Failed to get CPU usage: {e}")
+            self.cpu_label.setText("CPU Usage: Error")
 
     def apply_theme(self):
         if self.is_dark_theme:
@@ -385,6 +435,20 @@ class UARTInterface(QMainWindow):
                 color: #00ff00;
                 font-family: 'Courier';
                 font-size: 36px;  /* Significantly increased font size */
+                font-weight: bold;
+            }
+            
+            /* CPU frame specific styles */
+            QFrame#cpuFrame {
+                background-color: #1e1e1e;
+                border: 2px solid #3a3a3a;
+                border-radius: 15px;
+                padding: 10px;
+            }
+            QFrame#cpuFrame QLabel {
+                color: #ffaa00;
+                font-family: 'Courier';
+                font-size: 24px;
                 font-weight: bold;
             }
         """)
@@ -461,6 +525,20 @@ class UARTInterface(QMainWindow):
             /* Button container specific styles */
             QFrame#buttonContainer {
                 background-color: #f5f5f5;
+            }
+            
+            /* CPU frame specific styles */
+            QFrame#cpuFrame {
+                background-color: #ffffff;
+                border: 2px solid #dddddd;
+                border-radius: 15px;
+                padding: 10px;
+            }
+            QFrame#cpuFrame QLabel {
+                color: #ff6600;
+                font-family: 'Courier';
+                font-size: 24px;
+                font-weight: bold;
             }
         """)
         
